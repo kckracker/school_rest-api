@@ -1,9 +1,11 @@
 'use strict';
 // Importing sequelize references
 const { Model, DataTypes } = require('sequelize');
+const bcrypt = require('bcrypt');
 
 module.exports = (sequelize) => {
     class User extends Model {};
+
     User.init({
         firstName: {
             type: DataTypes.STRING,
@@ -31,18 +33,16 @@ module.exports = (sequelize) => {
         },
         emailAddress: {
             type: DataTypes.STRING,
+            unique: true,
             allowNull: false,
             validate: {
-                notNull: {
-                    msg: "Please enter a value for 'email'"
-                },
-                notEmpty: {
-                    msg: "Please enter a value for 'email'"
+                isEmail: {
+                    msg: "Please enter a valid 'email'"
                 }
             }
         },
         password: {
-            type: DataTypes.VIRTUAL,
+            type: DataTypes.STRING,
             allowNull: false,
             validate: {
                 notNull: {
@@ -51,17 +51,25 @@ module.exports = (sequelize) => {
                 notEmpty: {
                     msg: "Please enter a value for 'password'"
                 }
+            },
+            set(val){
+                const hashedPassword = bcrypt.hashSync(val, 10);
+                this.setDataValue('password', hashedPassword);
             }
         },
     },{
         sequelize,
-        modelName: "User",
-        timestamps: false
+        modelName: "User"
     });
     // Creates association relationship with Course model
     User.associate = (models) => {
-        User.hasMany(models.Course);
-    };
+        User.hasMany(models.Course, {
+            foreignKey: {
+                name: "userId",
+                type: DataTypes.INTEGER
+            }
+        });
+    }
     
     return User;
 };
