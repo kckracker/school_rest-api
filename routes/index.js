@@ -100,7 +100,7 @@ router.route('/courses')
     .post(verifyUser, async (req, res, next) => {
         try{
             const newCourse = await Course.create(req.body);
-            res.status(201).end();
+            res.location(`/courses/${newCourse.id}`).status(201).end();
         } catch(error) {
             if(error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError'){
                 res.status(400).json(error.errors);
