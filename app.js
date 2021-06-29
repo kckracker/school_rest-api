@@ -58,7 +58,7 @@ const server = app.listen(app.get('port'), () => {
   console.log(`Express server is listening on port ${server.address().port}`);
 });
 
-// Authenticate connection to database
+// try to authenticate connection to database, console the error if unable to authenticate
 (async function (){
   try {
   await sequelize.authenticate();

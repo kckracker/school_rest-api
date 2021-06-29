@@ -1,6 +1,7 @@
 // setup Express router
 const express = require('express');
 const router = express.Router();
+// import dependencies
 const auth = require('basic-auth');
 const bcrypt = require('bcrypt');
 
@@ -9,10 +10,16 @@ const {User, Course} = require('../models');
 
 /**
  * Function to authorize user with email and password credentials. 
- * @param {Object} req Accepts request opject for incoming request
- * @param {Object} res Accepts response object representing server response to request
- * @param {Function} next Accepts next method to push the request to next function.
- */
+* @param {Object} req Accepts request opject for incoming request
+* @param {Object} res Accepts response object representing server response to request
+* @param {Function} next Accepts next method to push the request to next function.
+    * 
+    * Provides request object to imported 'auth' method from 'basic-auth' package which parses headers to supply new object with name and pass props if valid.
+    * 
+    * If valid headers, imported 'compareSync' method called to compare object supplied by 'auth' method with database
+    * 
+    * Error messages supplied at each condition to provide accurate but vague failure message 
+    */
 const verifyUser = async (req, res, next) => {
     const credentials = auth(req);
     let message;
@@ -44,7 +51,9 @@ const verifyUser = async (req, res, next) => {
     }
 }
 
-// GET and POST routes for users
+// GET and POST routes for '/users'
+    // GET filters request through verifyUser function. Next, it utilizes sequelize findOne method and filters unwanted data using 'attributes' and 'exclude' props
+    // POST attempts sequelize create using request body and checks error to return model validation message if validation or constraint error
 router.route('/users')
     .get(verifyUser, async (req, res) => {
         const currentUser = await User.findOne({
@@ -69,15 +78,11 @@ router.route('/users')
             }
         }
     });
-// Delete User route to remove initial tested user creation
-// router.delete('/users/:id', async (req, res) => {
-//     const selectedUser = await User.findByPk(req.params.id);
-//     selectedUser.destroy();
-//     res.status(204).end();
-// })
 
 
-// GET and POST  routes for courses
+// GET and POST  routes for '/courses'
+    // GET attempts to return courses using sequelize findAll and filters out unwanted data using the 'attributes' and 'exclude' props. Associated User pulled via eager loading 'include' prop
+    // POST filters request through verifyUser function. Next, it attempts sequelize create using verified request body and checks error to return model validation message if validation or constraint error
 router.route('/courses')
     .get(async (req, res, next) => {
         try{
@@ -111,6 +116,9 @@ router.route('/courses')
     })
 
 // GET, PUT, and DELETE routes for 'courses/:id'
+    // GET attempts to return courses using sequelize findOne and filters out unwanted data using the 'attributes' and 'exclude' props. Associated User pulled via eager loading 'include' prop
+    // PUT filters request through verifyUser function. Next, it attempts reassignment of data with request object info and updates the record with sequelize save method. Also, checks error to supply model validation message upon validate or constraint error.
+    // DELETE filters request through verifyUser function. Next, it utilizes sequelize findOne method to match request param
 router.route('/courses/:id')
     .get(async (req, res) => {
         try{
