@@ -4,6 +4,7 @@
 const express = require('express');
 const morgan = require('morgan');
 const routes = require('./routes');
+const cors = require('cors');
 
 // importing Sequelize instance from models index
 const { sequelize } = require('./models');
@@ -17,6 +18,9 @@ const app = express();
 // setup top level application body parsing using native express middleware
 app.use(express.json());
 app.use(express.urlencoded());
+
+// allow CORS requests using 'cors' package as top level method for app
+app.use(cors());
 
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
